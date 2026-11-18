@@ -1350,8 +1350,9 @@ PRAVILA (SVA MORAJU BITI ISPUNJENA):
 15. Jezik: bosanski/hrvatski ijekavica
 16. Artikulacija: konkretna pitanja nastavnika u \\textit{} sa ,,bosanskim navodnicima'', konkretni odgovori
 17. Plan ploče: sadržaj specifičan za temu sa relevantnim formulama i pojmovima
-18. Vrati KOMPLETAN LaTeX dokument od \\documentclass do \\end{document}
-19. Bez markdown ograđivanja, bez objašnjenja — samo čisti LaTeX`;
+18. Vrati KOMPLETAN LaTeX dokument od \\documentclass do \\end{document}. Ne skraćuj, ne sažimaj i ne izostavljaj nijednu stranicu ni sekciju iz reference.
+19. Dužina i struktura moraju ostati približno iste kao u referentnom dokumentu; prilagodi samo tekstualni sadržaj.
+20. Bez markdown ograđivanja, bez objašnjenja — samo čisti LaTeX`;
 
   const userPrompt = `Referentni LaTeX dokument:
 
@@ -1368,7 +1369,7 @@ PRILAGODI ZA:
 - Tip časa: ${tipCasa}
 ${napomene ? `- Napomene: ${napomene}` : ''}
 
-Zadrži IDENTIČNU LaTeX strukturu sa svim adjustbox omotačima. Vrati kompletan LaTeX dokument.`;
+Zadrži IDENTIČNU LaTeX strukturu sa svim adjustbox omotačima. Vrati kompletan LaTeX dokument svih stranica, bez skraćivanja ili sažimanja.`;
 
   try {
     setLoadingPct(20, 'Slanje upita Mistral AI-ju...');
@@ -1378,7 +1379,7 @@ Zadrži IDENTIČNU LaTeX strukturu sa svim adjustbox omotačima. Vrati kompletan
       body: JSON.stringify({
         ...(apiKey ? {__api_key: apiKey} : {}),
         model: 'mistral-large-latest',
-        max_tokens: 16000,
+        max_tokens: 32000,
         temperature: 0.15,
         messages: [
           { role: 'system', content: systemPrompt },
@@ -1394,6 +1395,9 @@ Zadrži IDENTIČNU LaTeX strukturu sa svim adjustbox omotačima. Vrati kompletan
 
     setLoadingPct(55, 'AI završio — priprema LaTeX dokumenta...');
     const data = await response.json();
+    if (data?.choices?.[0]?.finish_reason === 'length') {
+      throw new Error('AI je skratio pripremu zbog ograničenja dužine. Pokušaj ponovo; PDF nije napravljen da ne bi bio nepotpun.');
+    }
     const content = data?.choices?.[0]?.message?.content;
     let latex;
     if (typeof content === 'string') {
@@ -1415,7 +1419,7 @@ Zadrži IDENTIČNU LaTeX strukturu sa svim adjustbox omotačima. Vrati kompletan
     const ds = latex.indexOf('\\documentclass');
     if (ds > 0) latex = latex.substring(ds);
     if (!latex.includes('\\documentclass')) throw new Error('AI nije vratio validan LaTeX. Pokušaj ponovo.');
-    if (!latex.includes('\\end{document}')) latex += '\n\\end{document}';
+    validateCompletePreparation(latex);
 
     generatedLatex = latex;
 
@@ -1435,6 +1439,18 @@ Zadrži IDENTIČNU LaTeX strukturu sa svim adjustbox omotačima. Vrati kompletan
     hideLoading();
     setLoading(false);
     showStatus('error', `Greška: ${err.message}`);
+  }
+}
+
+function validateCompletePreparation(latex) {
+  const requiredStructure = ['\\newpage', '\\section{', '\\begin{tcolorbox}'];
+  const missing = requiredStructure.filter(token => {
+    const referenceCount = ORIGINAL_DOC.split(token).length - 1;
+    const generatedCount = latex.split(token).length - 1;
+    return generatedCount < referenceCount;
+  });
+  if (latex.length < ORIGINAL_DOC.length * 0.65 || missing.length || !/\\end\{document\}\s*$/.test(latex)) {
+    throw new Error('AI je vratio nepotpunu ili skraćenu pripremu. Puni PDF nije napravljen; klikni „Generiši“ ponovo.');
   }
 }
 
