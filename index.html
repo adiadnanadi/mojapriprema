@@ -357,17 +357,14 @@ textarea{resize:vertical;min-height:110px;line-height:1.6}
     </div>
     <!-- Fallback kad CORS blokira kompajler -->
     <div class="fallback-box" id="fallbackBox">
-      <h3>📄 LaTeX priprema je generisana!</h3>
-      <p>Online kompajler nije dostupan iz browsera (CORS ograničenje).<br>
-      Skini .tex fajl i kompajliraj u Overleaf — besplatno, bez instalacije.</p>
+      <h3>PDF trenutno nije mogao biti napravljen</h3>
+      <p id="compileErrorText">Online kompajleri nisu vratili PDF. Pokušaj ponovo za nekoliko trenutaka.</p>
       <ul class="fallback-steps">
-        <li><span>1</span> Klikni "Skini .tex" dugme gore</li>
-        <li><span>2</span> Otvori overleaf.com i napravi novi projekt</li>
-        <li><span>3</span> Upload-aj .tex fajl</li>
-        <li><span>4</span> Klikni Recompile → Download PDF</li>
+        <li><span>1</span> Provjeri grešku kompajlera iznad</li>
+        <li><span>2</span> Klikni „Generiši“ da pokušaš ponovo</li>
       </ul>
       <br>
-      <button class="btn-overleaf" onclick="openOverleaf()">⚡ Otvori direktno u Overleaf</button>
+      <button class="btn-overleaf" onclick="openOverleaf()">⚡ Otvori LaTeX u Overleafu</button>
     </div>
     <div class="pdf-wrap" id="pdfWrap">
       <div class="pdf-topbar">
@@ -1443,27 +1440,50 @@ Zadrži IDENTIČNU LaTeX strukturu sa svim adjustbox omotačima. Vrati kompletan
 
 async function compileAndShow(latex, predmet, tema) {
   const filename = `priprema_${predmet}_${tema}`.replace(/\s+/g,'_').toLowerCase();
+  const errors = [];
 
-  // --- Pokusaj 1: YtoTech API (ima CORS) ---
-  try {
-    setLoadingPct(72, 'Kompajliranje — YtoTech LaTeX API...');
-    const resp = await fetch('https://latex.ytotech.com/builds/sync', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        compiler: 'pdflatex',
-        resources: [{ main: true, content: latex }]
-      })
-    });
-    if (resp.ok) {
-      const ct = resp.headers.get('content-type') || '';
-      if (ct.includes('pdf')) {
-        const blob = await resp.blob();
-        showPDF(blob, filename, predmet, tema);
-        return;
+  // Pokušaj sa više LaTeX engine-a jer generisani dokumenti ne rade uvijek
+  // sa istim engine-om. Ponovi pdflatex jednom za privremene mrežne greške.
+  for (const compiler of ['pdflatex', 'xelatex', 'lualatex']) {
+    const attempts = compiler === 'pdflatex' ? 2 : 1;
+    for (let attempt = 1; attempt <= attempts; attempt++) {
+      try {
+        setLoadingPct(72, `Kompajliranje PDF-a (${compiler}${attempt > 1 ? ` — pokušaj ${attempt}` : ''})...`);
+        const resp = await fetch('https://latex.ytotech.com/builds/sync', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            compiler,
+            resources: [{ main: true, content: latex }]
+          }),
+          signal: AbortSignal.timeout(90000)
+        });
+        const contentType = resp.headers.get('content-type') || '';
+        const resultBlob = await resp.blob();
+        if (resp.ok && contentType.toLowerCase().includes('pdf') && await isPDF(resultBlob)) {
+          showPDF(resultBlob, filename, predmet, tema);
+          return;
+        }
+
+        const responseText = await resultBlob.text();
+        const detail = responseText ? extractCompileError(responseText) : `HTTP ${resp.status}`;
+        errors.push(`${compiler}: ${detail}`);
+        // Retry only temporary server/limit errors; LaTeX errors won't change on retry.
+        if (attempt < attempts && resp.status !== 400 && resp.status !== 422) {
+          await new Promise(resolve => setTimeout(resolve, 1200));
+          continue;
+        }
+        break;
+      } catch (err) {
+        errors.push(`${compiler}: ${err.message}`);
+        if (attempt < attempts) {
+          await new Promise(resolve => setTimeout(resolve, 1200));
+          continue;
+        }
+        break;
       }
     }
-  } catch(e1) { console.warn('YtoTech nije dostupan:', e1.message); }
+  }
 
   // --- Pokusaj 2: TeXLive formData ---
   try {
@@ -1474,27 +1494,43 @@ async function compileAndShow(latex, predmet, tema) {
     fd.append('engine', 'pdflatex');
     fd.append('return', 'pdf');
     const resp2 = await fetch('https://texlive.net/cgi-bin/latexcgi', {
-      method: 'POST', body: fd
+      method: 'POST', body: fd, signal: AbortSignal.timeout(90000)
     });
-    if (resp2.ok) {
-      const ct2 = resp2.headers.get('content-type') || '';
-      if (ct2.includes('pdf')) {
-        const blob2 = await resp2.blob();
-        showPDF(blob2, filename, predmet, tema);
-        return;
-      }
+    const blob2 = await resp2.blob();
+    const ct2 = resp2.headers.get('content-type') || '';
+    if (resp2.ok && ct2.toLowerCase().includes('pdf') && await isPDF(blob2)) {
+      showPDF(blob2, filename, predmet, tema);
+      return;
     }
-  } catch(e2) { console.warn('TeXLive CORS blokiran:', e2.message); }
+    errors.push(`TeXLive: ${extractCompileError(await blob2.text()) || `HTTP ${resp2.status}`}`);
+  } catch(e2) {
+    errors.push(`TeXLive: ${e2.message}`);
+    console.warn('TeXLive nije dostupan:', e2.message);
+  }
 
-  // --- Fallback: nema online kompajlera dostupnog ---
-  // Prikazujemo lijepu stranicu sa uputstvima
   setLoadingPct(100, 'Priprema gotova!');
   setTimeout(() => {
     hideLoading();
     setLoading(false);
-    showFallbackUI(filename, predmet, tema);
-    showStatus('success', `✓ LaTeX priprema generisana! Skini .tex fajl i kompajliraj u Overleaf.`);
+    showFallbackUI(filename, predmet, tema, errors);
+    showStatus('error', 'PDF kompajliranje nije uspjelo. Pokušaj ponovo; detalji su prikazani ispod.');
   }, 600);
+}
+
+async function isPDF(blob) {
+  if (!blob || blob.size < 5) return false;
+  const signature = await blob.slice(0, 5).text();
+  return signature === '%PDF-';
+}
+
+function extractCompileError(text) {
+  try {
+    const data = JSON.parse(text);
+    const detail = data.error || data.message || data.logs || data.description || text;
+    return String(typeof detail === 'object' ? JSON.stringify(detail) : detail).slice(0, 700);
+  } catch (_) {
+    return text.replace(/\s+/g, ' ').slice(0, 700) || 'kompajler nije vratio detalje';
+  }
 }
 
 function showPDF(blob, filename, predmet, tema) {
@@ -1523,9 +1559,12 @@ function showPDF(blob, filename, predmet, tema) {
   }, 700);
 }
 
-function showFallbackUI(filename, predmet, tema) {
+function showFallbackUI(filename, predmet, tema, errors = []) {
   document.getElementById('pdfWrap').style.display = 'none';
   document.getElementById('downloadPdfBtn').style.display = 'none';
+  document.getElementById('compileErrorText').textContent = errors.length
+    ? errors.join(' | ').slice(0, 1800)
+    : 'Online kompajleri nisu vratili PDF. Pokušaj ponovo za nekoliko trenutaka.';
   const fb = document.getElementById('fallbackBox');
   fb.style.display = 'block';
   document.getElementById('pdfSection').classList.add('visible');
