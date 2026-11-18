@@ -1397,7 +1397,20 @@ Zadrži IDENTIČNU LaTeX strukturu sa svim adjustbox omotačima. Vrati kompletan
 
     setLoadingPct(55, 'AI završio — priprema LaTeX dokumenta...');
     const data = await response.json();
-    let latex = data.choices[0].message.content.trim();
+    const content = data?.choices?.[0]?.message?.content;
+    let latex;
+    if (typeof content === 'string') {
+      latex = content.trim();
+    } else if (Array.isArray(content)) {
+      latex = content
+        .map(part => typeof part === 'string' ? part : part?.text || '')
+        .join('')
+        .trim();
+    } else if (typeof content?.text === 'string') {
+      latex = content.text.trim();
+    } else {
+      throw new Error('API je vratio odgovor u neočekivanom formatu.');
+    }
 
     // Cleanup markdown fences
     latex = latex.replace(/^```latex[^\n]*/im,'').replace(/^```tex[^\n]*/im,'')
