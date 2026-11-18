@@ -77,6 +77,7 @@ header h1 span{color:var(--gold-light)}
 
 .field-group{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-bottom:22px}
 .field-group.triple{grid-template-columns:1fr 1fr 1fr}
+.field-group.quad{grid-template-columns:repeat(4,1fr)}
 .field-group.full{grid-template-columns:1fr}
 .field{display:flex;flex-direction:column;gap:8px}
 label{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:1px;color:var(--blue);font-weight:500}
@@ -209,7 +210,7 @@ textarea{resize:vertical;min-height:110px;line-height:1.6}
 ::-webkit-scrollbar-thumb{background:rgba(200,146,26,.3);border-radius:3px}
 @media(max-width:640px){
   .card-inner{padding:20px 16px}
-  .field-group,.field-group.triple{grid-template-columns:1fr}
+  .field-group,.field-group.triple,.field-group.quad{grid-template-columns:1fr}
   header{padding:36px 0 28px}
   header h1{font-size:2.2rem}
   .page-wrap{padding:20px 14px 60px}
@@ -304,7 +305,7 @@ textarea{resize:vertical;min-height:110px;line-height:1.6}
         </div>
       </div>
 
-      <div class="field-group triple" style="margin-bottom:22px">
+      <div class="field-group quad" style="margin-bottom:22px">
         <div class="field">
           <label>Razred</label>
           <input type="text" id="razred" placeholder="npr. Treći (III)">
@@ -321,6 +322,15 @@ textarea{resize:vertical;min-height:110px;line-height:1.6}
             <option value="Vježba">Vježba</option>
             <option value="Provjera znanja">Provjera znanja</option>
             <option value="Kombinirani čas">Kombinirani čas</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Trajanje (broj časova)</label>
+          <select id="trajanjeCasa">
+            <option value="1" selected>1 čas (45 minuta)</option>
+            <option value="2">2 časa (90 minuta)</option>
+            <option value="3">3 časa (135 minuta)</option>
+            <option value="4">4 časa (180 minuta)</option>
           </select>
         </div>
       </div>
@@ -1314,6 +1324,8 @@ async function generatePriprema() {
   const razred = document.getElementById('razred').value.trim();
   const brojUcenika = document.getElementById('brojUcenika').value;
   const tipCasa = document.getElementById('tipCasa').value;
+  const trajanjeCasa = Number(document.getElementById('trajanjeCasa').value);
+  const trajanjeMinuta = trajanjeCasa * 45;
   const napomene = document.getElementById('napomene').value.trim();
 
   // apiKey nije obavezan ako je postavljen u .env
@@ -1339,7 +1351,7 @@ PRAVILA (SVA MORAJU BITI ISPUNJENA):
 8. NIKAD ne koristi fiksne cm dimenzije koje zajedno prelaze 15.4cm
 9. Tabela rješenja u successbox: \\begin{tabular}{|l|l|l|}... sa adjustbox ako treba
 6. Zadrži iste fontawesome ikone: faGraduationCap, faHeart, faCogs, faClock, faChartLine, faExclamationTriangle, faStickyNote, faMicrochip, faCheckCircle
-7. Vremenski raspored IDENTIČAN: 5+12+12+8+8 minuta
+7. Prilagodi artikulaciju odabranom trajanju časa. Jedan nastavni čas traje 45 minuta; ukupno trajanje i zbir trajanja svih aktivnosti moraju biti tačno onoliko minuta koliko je zadano. Za više časova jasno označi svaki čas (1., 2., itd.) i rasporedi aktivnosti i odmore/pauze smisleno. Nemoj koristiti raspored 5+12+12+8+8 osim ako je odabran jedan čas.
 8. Radni listić: 9 pitanja, 25 bodova ukupno, ista skala ocjenjivanja
 9. Plan ploče: koristiti tcolorbox sa tabularx, NE tikzpicture sa koordinatama. Svaki segment (Definicija, Princip rada, itd.) je poseban tcolorbox unutar tabularx 2-kolone.
 10. Na naslovnoj strani iza naziva škole MORA biti \\\\\\\\ (novi red u LaTeX-u) da naziv priprema počne u novom redu
@@ -1367,9 +1379,10 @@ PRILAGODI ZA:
 - Razred: ${razred}
 - Broj učenika: ${brojUcenika}
 - Tip časa: ${tipCasa}
+- Trajanje: ${trajanjeCasa} ${trajanjeCasa === 1 ? 'nastavni čas' : 'nastavna časa'} (${trajanjeMinuta} minuta ukupno; 1 čas = 45 minuta)
 ${napomene ? `- Napomene: ${napomene}` : ''}
 
-Zadrži IDENTIČNU LaTeX strukturu sa svim adjustbox omotačima. Vrati kompletan LaTeX dokument svih stranica, bez skraćivanja ili sažimanja.`;
+Zadrži strukturu kompletnog dokumenta i sve njegove sekcije sa svim adjustbox omotačima. Prilagodi vremenski raspored odabranom trajanju i vrati kompletan LaTeX dokument svih stranica, bez skraćivanja ili sažimanja.`;
 
   try {
     setLoadingPct(20, 'Slanje upita Mistral AI-ju...');
