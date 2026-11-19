@@ -183,11 +183,7 @@ textarea{resize:vertical;min-height:110px;line-height:1.6}
 .pdf-topbar{background:#2d2d2d;padding:10px 16px;display:flex;align-items:center;gap:8px}
 .pdf-dot{width:11px;height:11px;border-radius:50%}
 .pdf-filename{font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.35);margin-left:8px}
-#pdfFrame,#quizPdfFrame{width:100%;height:760px;border:none;display:block;background:#525659;min-height:400px}
-.quiz-types{display:flex;flex-wrap:wrap;gap:14px}
-.quiz-types label{display:flex;align-items:center;gap:7px;font-family:'DM Mono',monospace;
-  font-size:11px;letter-spacing:.5px;color:var(--blue);cursor:pointer}
-.quiz-types input{width:auto;accent-color:var(--blue-mid)}
+#pdfFrame{width:100%;height:760px;border:none;display:block;background:#525659;min-height:400px}
 
 .ornament{text-align:center;color:rgba(200,146,26,.3);font-size:24px;
   letter-spacing:10px;margin:36px 0 28px;user-select:none;
@@ -218,7 +214,7 @@ textarea{resize:vertical;min-height:110px;line-height:1.6}
   header{padding:36px 0 28px}
   header h1{font-size:2.2rem}
   .page-wrap{padding:20px 14px 60px}
-  #pdfFrame,#quizPdfFrame{height:calc(100vw * 1.41)}
+  #pdfFrame{height:calc(100vw * 1.41)}
   .pdf-title{font-size:1.1rem}
   .pdf-actions{width:100%;justify-content:stretch}
   .btn-dl{flex:1;justify-content:center;font-size:11px;padding:10px 10px}
@@ -232,7 +228,7 @@ textarea{resize:vertical;min-height:110px;line-height:1.6}
   .fallback-steps li{font-size:11px}
 }
 @media(max-width:400px){
-  #pdfFrame,#quizPdfFrame{height:calc(100vw * 1.5)}
+  #pdfFrame{height:calc(100vw * 1.5)}
   header h1{font-size:1.9rem}
 }
 </style>
@@ -390,95 +386,6 @@ textarea{resize:vertical;min-height:110px;line-height:1.6}
       <iframe id="pdfFrame" title="PDF Preview"></iframe>
     </div>
   </div>
-
-  <div class="card" style="margin-top:32px">
-    <div class="card-inner">
-      <div class="section-label">Provjera znanja — kontrolni test</div>
-
-      <div class="field-group" style="margin-bottom:22px">
-        <div class="field">
-          <label>Predmet</label>
-          <input type="text" id="quizPredmet" placeholder="npr. Elektronika">
-        </div>
-        <div class="field">
-          <label>Nastavna jedinica (tema)</label>
-          <input type="text" id="quizTema" placeholder="npr. Kirchhoffovi zakoni">
-        </div>
-      </div>
-
-      <div class="field-group quad" style="margin-bottom:22px">
-        <div class="field">
-          <label>Razred</label>
-          <input type="text" id="quizRazred" placeholder="npr. Treći (III)">
-        </div>
-        <div class="field">
-          <label>Broj pitanja</label>
-          <input type="number" id="quizBroj" value="10" min="1" max="30">
-        </div>
-        <div class="field">
-          <label>Težina</label>
-          <select id="quizTezina">
-            <option value="Lakši">Lakši</option>
-            <option value="Srednji" selected>Srednji</option>
-            <option value="Teži">Teži</option>
-          </select>
-        </div>
-        <div class="field">
-          <label>Vrijeme (minuta)</label>
-          <input type="number" id="quizVrijeme" value="30" min="5" max="120">
-        </div>
-      </div>
-
-      <div class="section-label">Tipovi pitanja</div>
-      <div class="quiz-types" style="margin-bottom:22px">
-        <label><input type="checkbox" class="quiz-type" value="zaokruzi" checked> Zaokruživanje</label>
-        <label><input type="checkbox" class="quiz-type" value="dopuni" checked> Dopunjavanje</label>
-        <label><input type="checkbox" class="quiz-type" value="kratki" checked> Kratki odgovor</label>
-        <label><input type="checkbox" class="quiz-type" value="racun" checked> Računski zadaci</label>
-      </div>
-
-      <div class="section-label">Gradivo / napomene (opciono)</div>
-      <div class="field-group full" style="margin-bottom:30px">
-        <div class="field">
-          <textarea id="quizNapomene" placeholder="npr. Obuhvati prvi i drugi Kirchhoffov zakon, bez naizmjenične struje..."></textarea>
-        </div>
-      </div>
-
-      <button class="btn-generate" id="quizBtn" onclick="generateQuiz()">
-        <span class="btn-text" id="quizBtnText">✦ Generiši provjeru znanja</span>
-        <div class="spinner" id="quizSpinner"></div>
-      </button>
-
-      <div class="status-bar" id="quizStatusBar">
-        <div class="status-dot"></div>
-        <span id="quizStatusText"></span>
-      </div>
-    </div>
-  </div>
-
-  <div class="pdf-section" id="quizSection">
-    <div class="ornament">✦ ✦ ✦</div>
-    <div class="pdf-header">
-      <div class="pdf-title">Provjera znanja — PDF</div>
-      <div class="pdf-actions">
-        <a class="btn-dl btn-dl-outline" id="openQuizPdfBtn" href="#" target="_blank" style="display:none">↗ Otvori PDF</a>
-        <a class="btn-dl btn-dl-green" id="downloadQuizPdfBtn" href="#" download="provjera.pdf">⬇ Skini PDF</a>
-      </div>
-    </div>
-    <div class="fallback-box" id="quizFallbackBox">
-      <h3>PDF trenutno nije mogao biti napravljen</h3>
-      <p id="quizCompileErrorText">Online kompajleri nisu vratili PDF. Pokušaj ponovo za nekoliko trenutaka.</p>
-    </div>
-    <div class="pdf-wrap" id="quizPdfWrap">
-      <div class="pdf-topbar">
-        <div class="pdf-dot" style="background:#ff5f57"></div>
-        <div class="pdf-dot" style="background:#febc2e"></div>
-        <div class="pdf-dot" style="background:#28c840"></div>
-        <span class="pdf-filename" id="quizPdfFilename">provjera_znanja.pdf</span>
-      </div>
-      <iframe id="quizPdfFrame" title="PDF Preview"></iframe>
-    </div>
-  </div>
 </div>
 
 <script>
@@ -543,12 +450,11 @@ const STEPS = [
   [95,'Učitavanje rezultata...'],
 ];
 let stepTimer=null;
-function startLoadingSteps(steps){
-  const list = steps || STEPS;
+function startLoadingSteps(){
   let i=0;
   function next(){
-    if(i>=list.length)return;
-    const [pct,msg]=list[i];
+    if(i>=STEPS.length)return;
+    const [pct,msg]=STEPS[i];
     document.getElementById('loadingBar').style.width=pct+'%';
     document.getElementById('loadingStep').textContent=msg;
     i++;
@@ -561,11 +467,9 @@ function setLoadingPct(pct,msg){
   if(msg)document.getElementById('loadingStep').textContent=msg;
 }
 
-function showLoading(title, steps){
-  const heading = document.querySelector('.loading-title');
-  if (heading) heading.textContent = title || 'Generisanje priprema';
+function showLoading(){
   document.getElementById('loadingOverlay').classList.add('active');
-  startLoadingSteps(steps);
+  startLoadingSteps();
 }
 function hideLoading(){
   clearTimeout(stepTimer);
@@ -1742,315 +1646,6 @@ async function checkEnvKey() {
     field.style.display = 'block';
     const saved = localStorage.getItem('mistral_api_key');
     if (saved) document.getElementById('apiKey').value = saved;
-  }
-}
-
-// ===== GENERATOR PROVJERE ZNANJA =====
-const QUIZ_TYPE_LABELS = {zaokruzi:'Zaokruživanje',dopuni:'Dopunjavanje',kratki:'Kratki odgovor',racun:'Računski zadaci'};
-
-function setQuizLoading(on){
-  const btn=document.getElementById('quizBtn');
-  if(!btn) return;
-  btn.disabled=on;
-  document.getElementById('quizSpinner').style.display=on?'block':'none';
-  document.getElementById('quizBtnText').textContent=on?'Generisanje...':'✦ Generiši provjeru znanja';
-}
-
-function showQuizStatus(type,msg){
-  const bar=document.getElementById('quizStatusBar');
-  if(!bar) return;
-  bar.className='status-bar '+type;
-  document.getElementById('quizStatusText').textContent=msg;
-}
-
-function quizTexEsc(value){
-  const map={'\\':'\\textbackslash{}','&':'\\&','%':'\\%','$':'\\$','#':'\\#','_':'\\_','{':'\\{','}':'\\}','~':'\\textasciitilde{}','^':'\\textasciicircum{}'};
-  const symbols={'Ω':'$\\Omega$','μ':'$\\mu$','µ':'$\\mu$','≈':'$\\approx$','≤':'$\\leq$','≥':'$\\geq$','·':'$\\cdot$','²':'$^2$','³':'$^3$','°':'$^\\circ$','±':'$\\pm$','×':'$\\times$','÷':'$\\div$','→':'$\\rightarrow$','Δ':'$\\Delta$','α':'$\\alpha$','β':'$\\beta$','γ':'$\\gamma$','π':'$\\pi$','–':'--','—':'---','„':'"','“':'"','”':'"','’':"'",'‘':"'",'…':'...'};
-  return String(value==null?'':value)
-    .replace(/[\\&%$#_{}~^]/g,ch=>map[ch])
-    .replace(/[Ωμµ≈≤≥·²³°±×÷→Δαβγπ–—„“”’‘…]/g,ch=>symbols[ch]);
-}
-
-function quizPoints(p){
-  const n=parseInt(p&&p.bodovi,10);
-  return Number.isFinite(n)&&n>0&&n<=20?n:2;
-}
-
-function parseQuizJSON(text){
-  let t=String(text||'').trim();
-  t=t.replace(/^```json[^\n]*/im,'').replace(/^```[^\n]*/im,'').replace(/```[\s\S]*$/gim,'').trim();
-  const start=t.indexOf('{'),end=t.lastIndexOf('}');
-  if(start===-1||end===-1||end<=start) throw new Error('AI nije vratio ispravan JSON. Pokušaj ponovo.');
-  let raw;
-  try{ raw=JSON.parse(t.slice(start,end+1)); }catch(_){ throw new Error('AI je vratio neispravan JSON. Pokušaj ponovo.'); }
-  const allowed=new Set(Object.keys(QUIZ_TYPE_LABELS));
-  const pitanja=(Array.isArray(raw.pitanja)?raw.pitanja:[]).map(p=>{
-    let tip=allowed.has(p&&p.tip)?p.tip:'kratki';
-    let opcije=Array.isArray(p&&p.opcije)?p.opcije.map(o=>String(o||'').trim()).filter(Boolean).slice(0,6):[];
-    if(tip==='zaokruzi'&&opcije.length<2) tip='kratki';
-    const idx=Number.isInteger(p&&p.tacan_indeks)?p.tacan_indeks:0;
-    return {
-      tip,
-      pitanje:String((p&&p.pitanje)||'').trim(),
-      opcije,
-      tacan_indeks:Math.max(0,Math.min(idx,Math.max(opcije.length-1,0))),
-      tacan_odgovor:String((p&&p.tacan_odgovor)||'').trim(),
-      bodovi:quizPoints(p)
-    };
-  }).filter(p=>p.pitanje);
-  if(!pitanja.length) throw new Error('AI nije vratio nijedno pitanje. Pokušaj ponovo.');
-  return {naslov:String(raw.naslov||'Provjera znanja').trim()||'Provjera znanja',pitanja};
-}
-
-function quizToLatex(quiz,meta){
-  const total=quiz.pitanja.reduce((s,p)=>s+quizPoints(p),0);
-  let body='';
-  let key='';
-  quiz.pitanja.forEach(p=>{
-    body+=String.raw`\item ${quizTexEsc(p.pitanje)} \hfill \textbf{(${quizPoints(p)} b.)}`+'\n';
-    if(p.tip==='zaokruzi'){
-      body+=String.raw`\begin{enumerate}[label=\alph*), leftmargin=*, itemsep=0pt, topsep=2pt]`+'\n';
-      p.opcije.forEach(o=>{body+=String.raw`\item ${quizTexEsc(o)}`+'\n';});
-      body+=String.raw`\end{enumerate}`+'\n';
-      const letter=String.fromCharCode(97+p.tacan_indeks);
-      const correct=p.opcije[p.tacan_indeks]||'';
-      key+=String.raw`\item \textbf{${letter})} ${quizTexEsc(correct)} \hfill \textbf{${quizPoints(p)} b.}`+'\n';
-    } else if(p.tip==='dopuni'){
-      body+=String.raw`\vspace{2mm}\noindent\rule{\linewidth}{0.4pt}\vspace{2mm}`+'\n';
-      key+=String.raw`\item ${quizTexEsc(p.tacan_odgovor||'(odgovor nije naveden)')} \hfill \textbf{${quizPoints(p)} b.}`+'\n';
-    } else if(p.tip==='racun'){
-      body+=String.raw`\vspace{1mm}\noindent\textbf{Postupak:}\\[1mm]\rule{\linewidth}{0.3pt}\\[3mm]\rule{\linewidth}{0.3pt}\\[3mm]\rule{\linewidth}{0.3pt}`+'\n';
-      key+=String.raw`\item ${quizTexEsc(p.tacan_odgovor||'(odgovor nije naveden)')} \hfill \textbf{${quizPoints(p)} b.}`+'\n';
-    } else {
-      body+=String.raw`\vspace{1mm}\noindent\rule{\linewidth}{0.3pt}\\[3mm]\rule{\linewidth}{0.3pt}`+'\n';
-      key+=String.raw`\item ${quizTexEsc(p.tacan_odgovor||'(odgovor nije naveden)')} \hfill \textbf{${quizPoints(p)} b.}`+'\n';
-    }
-  });
-
-  const uputstvo = quiz.pitanja.some(p=>p.tip==='zaokruzi')
-    ? String.raw`Pažljivo pročitaj svako pitanje. Kod pitanja sa zaokruživanjem zaokruži slovo ispred tačnog odgovora. Kod ostalih pitanja odgovor upiši čitko; kod računskih zadataka prikaži postupak.`
-    : String.raw`Pažljivo pročitaj svako pitanje i odgovori čitko. Kod računskih zadataka prikaži postupak.`;
-
-  return String.raw`\documentclass[11pt,a4paper]{article}
-\usepackage[utf8]{inputenc}
-\usepackage[T1]{fontenc}
-\usepackage[croatian]{babel}
-\usepackage[a4paper,margin=2cm]{geometry}
-\usepackage{xcolor}
-\usepackage{enumitem}
-\usepackage{fancyhdr}
-\usepackage{array}
-\definecolor{primaryblue}{RGB}{0,73,135}
-\pagestyle{fancy}
-\fancyhf{}
-\fancyhead[L]{\small\textcolor{primaryblue}{${quizTexEsc(meta.skola)}}}
-\fancyhead[R]{\small\textcolor{primaryblue}{${quizTexEsc(meta.predmet)}}}
-\fancyfoot[C]{\textcolor{primaryblue}{\thepage}}
-\renewcommand{\headrulewidth}{0.8pt}
-\setlength{\parindent}{0pt}
-\begin{document}
-\begin{center}
-{\Large\bfseries\textcolor{primaryblue}{${quizTexEsc(quiz.naslov)}}}\\[3pt]
-{\large ${quizTexEsc(meta.predmet)} --- ${quizTexEsc(meta.tema)}}\\[2pt]
-{\small Razred: ${quizTexEsc(meta.razred)} \quad Vrijeme: ${meta.vrijeme} minuta \quad Ukupno bodova: ${total}}\\[2pt]
-{\small Nastavnik: ${quizTexEsc(meta.nastavnik)}}
-\end{center}
-\vspace{2mm}
-Ime i prezime: \rule{7cm}{0.4pt} \hfill Razred: \rule{2cm}{0.4pt} \hfill Datum: \rule{2.4cm}{0.4pt}
-\vspace{1mm}
-\hrule
-\vspace{3mm}
-\textbf{Uputstvo:} ${uputstvo}
-\vspace{2mm}
-\begin{enumerate}[leftmargin=*, itemsep=6pt]
-${body}
-\end{enumerate}
-\vfill
-\begin{center}\small Ukupno bodova: \textbf{${total}}\end{center}
-\newpage
-\begin{center}
-{\Large\bfseries\textcolor{primaryblue}{Ključ odgovora i bodovanje}}\\[3pt]
-{\small ${quizTexEsc(meta.predmet)} --- ${quizTexEsc(meta.tema)} (za nastavnika)}
-\end{center}
-\vspace{4mm}
-\begin{enumerate}[leftmargin=*, itemsep=4pt]
-${key}
-\end{enumerate}
-\vspace{4mm}
-\hrule
-\vspace{2mm}
-Ukupno bodova: \textbf{${total}}
-\end{document}`;
-}
-
-async function compileQuizPDF(latex){
-  const errors=[];
-  for(const compiler of ['pdflatex','xelatex']){
-    try{
-      setLoadingPct(78,'Kompajliranje PDF-a ('+compiler+')...');
-      const resp=await fetch('https://latex.ytotech.com/builds/sync',{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({compiler,resources:[{main:true,content:latex}]}),
-        signal:AbortSignal.timeout(90000)
-      });
-      const blob=await resp.blob();
-      const ct=(resp.headers.get('content-type')||'').toLowerCase();
-      if(resp.ok&&ct.includes('pdf')&&await isPDF(blob)) return blob;
-      errors.push(compiler+': '+(await blob.text()).replace(/\s+/g,' ').slice(0,250));
-    }catch(err){ errors.push(compiler+': '+err.message); }
-  }
-  try{
-    setLoadingPct(86,'Kompajliranje — TeXLive.net...');
-    const fd=new FormData();
-    fd.append('filecontents[]',latex);
-    fd.append('filename[]','document.tex');
-    fd.append('engine','pdflatex');
-    fd.append('return','pdf');
-    const resp=await fetch('https://texlive.net/cgi-bin/latexcgi',{method:'POST',body:fd,signal:AbortSignal.timeout(90000)});
-    const blob=await resp.blob();
-    const ct=(resp.headers.get('content-type')||'').toLowerCase();
-    if(resp.ok&&ct.includes('pdf')&&await isPDF(blob)) return blob;
-    errors.push('TeXLive: HTTP '+resp.status);
-  }catch(err){ errors.push('TeXLive: '+err.message); }
-  throw new Error(errors.join(' | ').slice(0,900));
-}
-
-function showQuizPDF(blob, filename){
-  const url=URL.createObjectURL(blob);
-  document.getElementById('quizPdfFrame').src=url;
-  document.getElementById('quizPdfFilename').textContent=filename+'.pdf';
-  const dl=document.getElementById('downloadQuizPdfBtn');
-  dl.href=url; dl.download=filename+'.pdf'; dl.style.display='inline-flex';
-  const open=document.getElementById('openQuizPdfBtn');
-  open.href=url; open.style.display='inline-flex';
-  document.getElementById('quizFallbackBox').style.display='none';
-  document.getElementById('quizPdfWrap').style.display='block';
-  setLoadingPct(100,'Gotovo!');
-  setTimeout(()=>{
-    hideLoading();
-    setQuizLoading(false);
-    document.getElementById('quizSection').classList.add('visible');
-    showQuizStatus('success','✓ Provjera znanja je napravljena.');
-    document.getElementById('quizSection').scrollIntoView({behavior:'smooth',block:'start'});
-  },500);
-}
-
-function showQuizFallbackUI(message){
-  document.getElementById('quizPdfWrap').style.display='none';
-  document.getElementById('quizCompileErrorText').textContent=message||'Online kompajleri nisu vratili PDF. Pokušaj ponovo za nekoliko trenutaka.';
-  document.getElementById('quizFallbackBox').style.display='block';
-  document.getElementById('quizSection').classList.add('visible');
-  hideLoading();
-  setQuizLoading(false);
-  showQuizStatus('error','PDF kompajliranje nije uspjelo. Pokušaj ponovo.');
-  document.getElementById('quizSection').scrollIntoView({behavior:'smooth',block:'start'});
-}
-
-async function generateQuiz(){
-  const predmet=document.getElementById('quizPredmet').value.trim();
-  const tema=document.getElementById('quizTema').value.trim();
-  const razred=document.getElementById('quizRazred').value.trim();
-  const broj=Math.max(1,Math.min(30,parseInt(document.getElementById('quizBroj').value,10)||10));
-  const tezina=document.getElementById('quizTezina').value;
-  const vrijeme=Math.max(5,Math.min(120,parseInt(document.getElementById('quizVrijeme').value,10)||30));
-  const napomene=document.getElementById('quizNapomene').value.trim();
-  const tipovi=Array.from(document.querySelectorAll('.quiz-type:checked')).map(cb=>cb.value);
-
-  if(!predmet) return showQuizStatus('error','Unesite naziv predmeta!');
-  if(!tema) return showQuizStatus('error','Unesite nastavnu jedinicu (temu)!');
-  if(!razred) return showQuizStatus('error','Unesite razred!');
-  if(!tipovi.length) return showQuizStatus('error','Odaberite barem jedan tip pitanja!');
-
-  const skola=document.getElementById('skola').value.trim();
-  const nastavnik=document.getElementById('nastavnik').value.trim();
-  const apiKeyEl=document.getElementById('apiKey');
-  const apiKey=apiKeyEl?apiKeyEl.value.trim():'';
-  const typeNames=tipovi.map(t=>QUIZ_TYPE_LABELS[t]).join(', ');
-
-  const systemPrompt=String.raw`Ti si iskusan nastavnik koji pravi kontrolne provjere znanja za srednju školu.
-Vrati ISKLJUČIVO valjan JSON bez markdowna, bez objašnjenja i bez LaTeX-a.
-Struktura JSON-a:
-{"naslov":"kratak naslov provjere","pitanja":[{"tip":"zaokruzi","pitanje":"tekst pitanja","opcije":["prva","druga","treća","četvrta"],"tacan_indeks":0,"bodovi":2},{"tip":"dopuni","pitanje":"tekst s prazninom","tacan_odgovor":"tačan odgovor","bodovi":2},{"tip":"kratki","pitanje":"tekst pitanja","tacan_odgovor":"očekivani odgovor","bodovi":3},{"tip":"racun","pitanje":"tekst zadatka","tacan_odgovor":"rješenje i kratak postupak","bodovi":4}]}
-Pravila:
-1. Koristi ISKLJUČIVO tipove koje nastavnik odabere: ${typeNames}.
-2. Vrati tačno ${broj} pitanja.
-3. Jezik: bosanski/hrvatski ijekavica, prilagođeno razredu ${razred}.
-4. Pitanja moraju biti stručno tačna, jasna i nedvosmislena, bez ponavljanja.
-5. Kod tipa "zaokruzi" ponudi tačno 4 opcije bez oznaka a), b), c), d); "tacan_indeks" je indeks tačne opcije počevši od 0.
-6. Kod ostalih tipova "tacan_odgovor" mora sadržavati konkretan odgovor (kod računskih i rezultat i kratak postupak).
-7. "bodovi" je cijeli broj od 1 do 5, u skladu sa težinom pitanja.
-8. "naslov" neka bude kratak i konkretan.`;
-
-  const userPrompt=`Predmet: ${predmet}
-Nastavna jedinica: ${tema}
-Razred: ${razred}
-Težina: ${tezina}
-Broj pitanja: ${broj}
-Vrijeme izrade: ${vrijeme} minuta
-Tipovi pitanja: ${typeNames}
-${napomene?`Napomene/gradivo: ${napomene}`:''}
-Vrati isključivo JSON po zadatoj strukturi.`;
-
-  showLoading('Generisanje provjere znanja',[
-    [5,'Priprema podataka...'],
-    [20,'Slanje upita Mistral AI-ju...'],
-    [45,'AI pravi pitanja i bodovanje...'],
-    [65,'Priprema LaTeX provjere...'],
-    [78,'Kompajliranje PDF-a...'],
-    [92,'Učitavanje rezultata...']
-  ]);
-  setQuizLoading(true);
-  document.getElementById('quizSection').classList.remove('visible');
-
-  try{
-    setLoadingPct(20,'Slanje upita Mistral AI-ju...');
-    const response=await fetch(API_BASE+'/api/mistral',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        ...(apiKey?{__api_key:apiKey}:{}),
-        model:'mistral-large-latest',
-        max_tokens:8000,
-        temperature:0.2,
-        messages:[{role:'system',content:systemPrompt},{role:'user',content:userPrompt}]
-      })
-    });
-
-    if(!response.ok){
-      let msg='HTTP '+response.status;
-      try{const err=await response.json();msg=err.error?.message||msg;}catch(_){}
-      throw new Error(msg);
-    }
-
-    const data=await response.json();
-    if(data?.choices?.[0]?.finish_reason==='length'){
-      throw new Error('AI je skratio provjeru zbog ograničenja dužine. Smanji broj pitanja i pokušaj ponovo.');
-    }
-    const content=data?.choices?.[0]?.message?.content;
-    let text;
-    if(typeof content==='string') text=content;
-    else if(Array.isArray(content)) text=content.map(part=>typeof part==='string'?part:(part?.text||'')).join('');
-    else if(typeof content?.text==='string') text=content.text;
-    if(!text) throw new Error('API je vratio odgovor u neočekivanom formatu.');
-
-    setLoadingPct(65,'Priprema LaTeX provjere...');
-    const quiz=parseQuizJSON(text);
-    const meta={skola:skola||'Škola',nastavnik:nastavnik||'',predmet,tema,razred,vrijeme};
-    const latex=quizToLatex(quiz,meta);
-    const filename=('provjera_'+predmet+'_'+tema).replace(/\s+/g,'_').toLowerCase();
-
-    let blob;
-    try{ blob=await compileQuizPDF(latex); }
-    catch(compileErr){
-      showQuizFallbackUI(compileErr.message);
-      return;
-    }
-    showQuizPDF(blob,filename);
-  }catch(err){
-    hideLoading();
-    setQuizLoading(false);
-    showQuizStatus('error','Greška: '+err.message);
   }
 }
 
